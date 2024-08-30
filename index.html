@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Groundstation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <style>
+        html, body {
+  overscroll-behavior: none;
+}
+    </style>
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'Settings')">Settings</button>
+        <button class="tablinks" onclick="openTab(event, 'DriveTrain')">Drive Train</button>
+        <button class="tablinks" onclick="openTab(event, 'RoboticArm')">Robotic Arm</button>
+    </div>
+
+    <div id="Settings" class="tabcontent">
+        <h1>Gamepad WebSocket App</h1>
+        <button id="connectBtn">Connect to WebSocket Server</button>
+        <div id="status">Status: Disconnected</div>
+        
+        <!-- Mode Selector -->
+        <div class="parameter-row">
+            <label for="modeSelector">Mode: </label>
+            <select id="modeSelector">
+                <option value="robot">Robot</option>
+                <option value="turtle">Turtle</option>
+            </select>
+        </div>
+    </div>
+  
+    <div id="DriveTrain" class="tabcontent">
+        <!-- Existing drive train controls here -->
+        <div id="joystick-container">
+            <div id="joystick"></div>
+        </div>
+        
+        <div id="output">X: 0, Y: 0</div>
+        
+        <!-- Slider for Scaling Speed -->
+        <div class="parameter-row">
+            <label for="speedScale">Speed Factor: </label>
+            <input type="range" id="speedScale" min="0" max="100" value="100">
+            <span id="speedScaleValue">100%</span>
+        </div>
+
+        <!-- Input for Max Translational Speed -->
+        <div class="parameter-row">
+            <label for="maxTranslationalSpeed">Trans Speed (m/s): </label>
+            <input type="number" id="maxTranslationalSpeed" min="0" step="0.01" value="1.0">
+            <div></div>
+        </div>
+
+        <!-- Input for Max Rotational Speed -->
+        <div class="parameter-row">
+            <label for="maxRotationalSpeed">Rot Speed (DEG/s): </label>
+            <input type="number" id="maxRotationalSpeed" min="0" step="0.1" value="60">
+            <div></div>
+        </div>
+
+        <!-- Switchable Button for Motors ON/OFF -->
+        <div>
+            <button id="motorsSwitch" data-status="off">Motors: OFF</button>
+        </div>
+    </div>
+  
+    <div id="RoboticArm" class="tabcontent">
+        <!-- Controls for the robotic arm go here -->
+        <!-- Example: Slider for arm rotation -->
+        <div>
+            <label for="armRotation">Arm Rotation (DEG): </label>
+            <input type="range" id="armRotation" min="0" max="180" value="90">
+            <span id="armRotationValue">90°</span>
+        </div>
+    </div>
+  
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+}
+
+#status {
+  margin-top: 20px;
+}
+
+#joystick-container {
+  width: 200px;
+  height: 200px;
+  border: 3px solid black;
+  border-radius: 50%;
+  margin: 20px auto;
+  position: relative;
+  background-color: #ddd;
+}
+
+#joystick {
+  width: 50px;
+  height: 50px;
+  background-color: blue;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+}
+
+#output {
+  text-align: center;
+}
+
+/* CSS to increase the size of the slider thumb */
+input[type="range"]{
+-webkit-appearance: none;
+appearance: none;
+cursor: pointer;
+outline: none;
+border-radius: 1px;
+height: 5px;
+background: #ddd;
+margin-top: 15px;
+margin-bottom: 15px;
+}
+
+/* CSS to increase the size of the slider thumb */
+input[type="range"]::-webkit-slider-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 25px; /* Adjust this value to set the width of the thumb */
+height: 25px; /* Adjust this value to set the height of the thumb */
+background: blue; /* Set the background color of the thumb */
+cursor: pointer; /* Optional: Sets the cursor type when hovering over the thumb */
+border-radius: 15px; /* Optional: Rounds the corners of the thumb */
+}
+
+input[type="range"]::-moz-range-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 25px;
+height: 25px;
+background: blue;
+cursor: pointer;
+border-radius: 15px;
+}
+
+input[type="range"]::-ms-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 25px;
+height: 25px;
+background: blue;
+cursor: pointer;
+border-radius: 15px;
+}
+
+.parameter-row {
+display: flex; /* Enables Flexbox */
+align-items: center; /* Vertically centers the items in the row */
+justify-content: space-between; /* Spreads out the items */
+margin-bottom: 10px; /* Adds space between each row */
+width: 50%;
+min-width: 300px;
+margin: auto;
+}
+
+.parameter-row label {
+flex: 1; /* Allocates space for the label */
+margin-right: 10px; /* Adds space between the label and the range input */
+min-width: 130px;
+}
+
+.parameter-row input[type="range"] {
+flex: 3; /* Gives the range input more space relative to other elements */
+min-width: 50px;
+/* max-width: 200px; */
+}
+
+.parameter-row input[type="number"] {
+flex: 3; /* Allocates space for the text input */
+min-width: 50px; /* Fixes the width of the text input */
+/* max-width: 200px; */
+}
+
+.parameter-row div, span {
+flex: 0.5;
+min-width: 30px;
+}
+
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
