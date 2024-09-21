@@ -3,9 +3,9 @@
 # Define variables
 DISPLAY=:1
 VNC_PORT=5901
-NO_VNC_PORT=9999
-VNC_PASSWORD_FILE=/home/ubuntu/.vnc/passwd
-NO_VNC_DIR=/home/ubuntu/noVNC
+NO_VNC_PORT=6080
+VNC_PASSWORD_FILE=/root/.vnc/passwd
+NO_VNC_DIR=/root/noVNC
 
 # Function to kill existing processes
 kill_existing_processes() {
@@ -24,14 +24,15 @@ create_x11vnc_password() {
     # Check if password file exists
     if [ ! -f $VNC_PASSWORD_FILE ]; then
         echo "Password file not found. Creating a new one..."
-        # Prompt for the password
-        echo -n "Enter VNC password: "
-        read -s PASSWORD
-        echo
-        echo "$PASSWORD" | x11vnc -storepasswd -f $VNC_PASSWORD_FILE
+        # Set a default password
+        echo "1234" | x11vnc -storepasswd -f $VNC_PASSWORD_FILE
     else
         echo "x11vnc password file already exists."
     fi
+
+    # Debugging: Display the contents of the password file
+    echo "Contents of $VNC_PASSWORD_FILE:"
+    cat $VNC_PASSWORD_FILE
 }
 
 # Function to start Xvfb
@@ -52,7 +53,7 @@ start_x11vnc() {
 start_noVNC() {
     echo "Starting noVNC on port $NO_VNC_PORT..."
     cd $NO_VNC_DIR
-    websockify --web $NO_VNC_DIR $NO_VNC_PORT localhost:$VNC_PORT &
+    ./utils/launch.sh --vnc localhost:$VNC_PORT --listen $NO_VNC_PORT &
     NOVNC_PID=$!
 }
 
@@ -80,6 +81,16 @@ check_process_status() {
     fi
 }
 
+# Function to handle termination signals
+cleanup() {
+    echo "Caught termination signal! Cleaning up..."
+    kill_existing_processes
+    exit 0
+}
+
+# Trap termination signals
+trap cleanup SIGINT SIGTERM
+
 # Execute functions
 kill_existing_processes
 create_x11vnc_password
@@ -91,3 +102,5 @@ check_process_status
 
 echo "Setup complete. You can access the VNC stream at http://<VPS_PUBLIC_IP>:$NO_VNC_PORT/vnc.html"
 
+# Keep the script running
+tail -f /dev/null
