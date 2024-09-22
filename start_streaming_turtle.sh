@@ -9,10 +9,12 @@ NO_VNC_DIR=/root/noVNC
 
 # Function to kill existing processes
 kill_existing_processes() {
-    echo "Killing existing x11vnc, Xvfb, and noVNC processes..."
+    echo "Killing existing x11vnc, Xvfb, noVNC, roscore, and turtlesim processes..."
     pkill -f x11vnc
     pkill -f Xvfb
     pkill -f websockify
+    pkill -f roscore
+    pkill -f turtlesim_node
 }
 
 # Function to create x11vnc password
@@ -57,28 +59,22 @@ start_noVNC() {
     NOVNC_PID=$!
 }
 
-# Function to wait for processes
-wait_for_processes() {
-    echo "Waiting for processes to start..."
-    sleep 5
+# Function to start roscore
+start_roscore() {
+    echo "Starting roscore..."
+    source /opt/ros/noetic/setup.bash
+    roscore &
+    ROSCORE_PID=$!
+    sleep 5  # Give roscore some time to start up
 }
 
-# Function to check process status
-check_process_status() {
-    if ! ps -p $XVFB_PID > /dev/null; then
-        echo "Xvfb did not start successfully."
-        exit 1
-    fi
-
-    if ! ps -p $X11VNC_PID > /dev/null; then
-        echo "x11vnc did not start successfully."
-        exit 1
-    fi
-
-    if ! ps -p $NOVNC_PID > /dev/null; then
-        echo "noVNC did not start successfully."
-        exit 1
-    fi
+# Function to start turtlesim
+start_turtlesim() {
+    echo "Starting turtlesim..."
+    source /opt/ros/noetic/setup.bash
+    export DISPLAY=$DISPLAY
+    rosrun turtlesim turtlesim_node &
+    TURTLESIM_PID=$!
 }
 
 # Function to handle termination signals
@@ -97,8 +93,8 @@ create_x11vnc_password
 start_xvfb
 start_x11vnc
 start_noVNC
-wait_for_processes
-check_process_status
+start_roscore
+start_turtlesim
 
 echo "Setup complete. You can access the VNC stream at http://<VPS_PUBLIC_IP>:$NO_VNC_PORT/vnc.html"
 

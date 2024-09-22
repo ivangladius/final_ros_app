@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     websockify \
     wget \
     tigervnc-standalone-server \
+    ros-noetic-turtlesim \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
