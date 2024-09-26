@@ -37,8 +37,8 @@ class HTTPServer(TCPServer):
 
 def start_http_server():
     handler = SimpleHTTPRequestHandler
-    httpd = HTTPServer(("0.0.0.0", 8000), handler)
-    print("HTTP server is running at http://localhost:8000")
+    httpd = HTTPServer(("0.0.0.0", 9999), handler)
+    print("HTTP server is running at http://localhost:9999")
     httpd.serve_forever()
 
 async def main(mode):

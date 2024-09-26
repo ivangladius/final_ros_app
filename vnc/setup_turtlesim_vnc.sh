@@ -35,5 +35,8 @@ autorestart=true
 environment=DISPLAY=:1
 EOF
 
+# Ensure no existing X server is running on display :1
+rm -f /tmp/.X1-lock
+
 # Start supervisor to run the services
 /usr/bin/supervisord
