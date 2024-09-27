@@ -1,8 +1,6 @@
 #!/bin/bash
 
 set -e
-set -x
-
 # Source ROS setup
 source /opt/ros/noetic/setup.bash
 

@@ -19,7 +19,7 @@ services:
     build:
       context: ./app
     ports:
-      - "8000:8000"  # Web server port
+      - "9999:9999"  # Web server port
       - "8765:8765"  # WebSocket server port
     environment:
       - ROS_MASTER_URI=http://vnc_ros:11311
@@ -28,6 +28,18 @@ services:
       - vnc_ros
     networks:
       - ros_network
+
+  flutter_backend:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"  # Expose the Flutter web app on port 8080
+    depends_on:
+      - app_backend
+    networks:
+      - ros_network
+    stdin_open: true  # Keep STDIN open
+    tty: true         # Allocate a pseudo-TTY
 
 networks:
   ros_network:

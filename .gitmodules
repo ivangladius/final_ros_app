@@ -1,0 +1,3 @@
+[submodule "ima-frontend"]
+	path = ima-frontend
+	url = git@github.com:ivangladius/ima-frontend.git
