@@ -4,7 +4,7 @@ set -e
 # Source ROS setup
 source /opt/ros/noetic/setup.bash
 
-# Start roscore
+# Start roscore with specific binding
 roscore &
 
 # Wait for roscore to be up

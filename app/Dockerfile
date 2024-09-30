@@ -10,6 +10,33 @@ RUN apt-get update && apt-get install -y \
     ros-noetic-std-msgs \
     ros-noetic-geometry-msgs \
     ros-noetic-nav-msgs \
+    git \
+    curl \
+    unzip \
+    xz-utils \
+    zip \
+    libglu1-mesa \
+    wget \
+    ca-certificates \
+    gnupg \
+    iproute2 \
+    net-tools \
+    iputils-ping \
+    traceroute \
+    nmap \
+    netcat \
+    tcpdump \
+    telnet \
+    dnsutils \
+    whois \
+    htop \
+    iftop \
+    iotop \
+    vim \
+    nano \
+    tmux \
+    screen \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up catkin workspace
@@ -23,26 +50,18 @@ COPY frost_msgs /root/catkin_ws/src/frost_msgs
 # Build the workspace
 RUN /bin/bash -c '. /opt/ros/noetic/setup.bash && catkin build'
 
-# Source the workspace in .bashrc
-RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
+# Create virtual environment in /opt
+RUN python3 -m venv /opt/venv
+
+# Activate virtual environment and install dependencies
+COPY requirements.txt /tmp/requirements.txt
+RUN /bin/bash -c "source /opt/venv/bin/activate && pip install -r /tmp/requirements.txt"
+
+# Source the workspace and activate venv in .bashrc
+RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc && \
+    echo "source /opt/venv/bin/activate" >> /root/.bashrc
 
 WORKDIR /root/app
 
-# Copy application files
-COPY . .
-
-# Create virtual environment
-RUN python3 -m venv venv
-
-# Activate virtual environment and install dependencies
-RUN /bin/bash -c "source venv/bin/activate && pip install -r requirements.txt"
-
-# Make start script executable
-RUN chmod +x start.sh
-
-# Copy start.sh script
-COPY start.sh /root/app/start.sh
-RUN chmod +x /root/app/start.sh
-
-# Set the entrypoint
-CMD ["/bin/bash", "-c", "./start.sh"]
+# Set the entrypoint to keep the container running
+CMD ["./start.sh"]

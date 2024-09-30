@@ -4,30 +4,37 @@ services:
   vnc_ros:
     build:
       context: ./vnc
+    container_name: vnc_ros
+    hostname: vnc_ros
     ports:
       - "6080:6080"  # noVNC port
       - "5901:5901"  # VNC port
       - "11311:11311"  # ROS master port
     environment:
       - DISPLAY=:1
-      - ROS_MASTER_URI=http://localhost:11311
       - ROS_HOSTNAME=vnc_ros
+      - ROS_MASTER_URI=http://vnc_ros:11311
     networks:
       - ros_network
+#    command: roscore
 
   app_backend:
     build:
       context: ./app
+    container_name: app_backend
+    hostname: app_backend
     ports:
       - "9999:9999"  # Web server port
       - "8765:8765"  # WebSocket server port
     environment:
+      - ROS_HOSTNAME=app_backend
       - ROS_MASTER_URI=http://vnc_ros:11311
-      - ROS_HOSTNAME=python_server
     depends_on:
       - vnc_ros
     networks:
       - ros_network
+    volumes:
+      - ./app:/root/app
 
   # flutter_backend:
   #   build:
