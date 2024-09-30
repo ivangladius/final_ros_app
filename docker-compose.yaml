@@ -16,11 +16,10 @@ services:
       - ROS_MASTER_URI=http://vnc_ros:11311
     networks:
       - ros_network
-#    command: roscore
 
   app_backend:
     build:
-      context: ./app
+      context: ./backend
     container_name: app_backend
     hostname: app_backend
     ports:
@@ -33,47 +32,37 @@ services:
       - vnc_ros
     networks:
       - ros_network
-    volumes:
-      - ./app:/root/app
 
-  # flutter_backend:
-  #   build:
-  #     context: ./ima-frontend
-  #   ports:
-  #     - "8080:8080"  # Expose the Flutter web app on port 8080
-  #   volumes:
-  #     - ./ima-frontend:/app  # Mount the Flutter project directory
-  #   depends_on:
-  #     - app_backend
-  #   networks:
-  #     - ros_network
-  #   stdin_open: true  # Keep STDIN open
-  #   tty: true         # Allocate a pseudo-TTY
-  #   environment:
-  #     - TERM=xterm-256color
-
-  flutter_dev:
+  flutter_frontend:
     build:
-      context: ./ima-frontend/dev_container
-    volumes:
-      - ./ima-frontend:/app
+      context: ./frontend
     ports:
-      - "8081:8081"
-    environment:
-      - FLUTTER_WEB_PORT=8081
-    tty: true
-    stdin_open: true
-    networks:
-      - ros_network
+      - "8081:8081"  # Expose the Flutter web app on port 8080
     depends_on:
       - app_backend
+    networks:
+      - ros_network
+    stdin_open: true  # Keep STDIN open
+    tty: true         # Allocate a pseudo-TTY
+    environment:
+      - TERM=xterm-256color
+      - FLUTTER_WEB_PORT=8081
 
-  # flutter_prod:
+  # flutter_dev:
   #   build:
-  #     context: ./prod_container
-  #     dockerfile: Dockerfile
+  #     context: ./ima-frontend/dev_container
+  #   volumes:
+  #     - ./ima-frontend:/app
   #   ports:
-  #     - "80:80"
+  #     - "8081:8081"
+  #   environment:
+  #     - FLUTTER_WEB_PORT=8081
+  #   tty: true
+  #   stdin_open: true
+  #   networks:
+  #     - ros_network
+  #   depends_on:
+  #     - app_backend
 
 networks:
   ros_network:

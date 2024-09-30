@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/frost/frost_ws/devel/include/**",
+        "/home/frost/base_ws/install/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/frost/frost_ws/src/ar_track_alvar/ar_track_alvar/include/**",
+        "/home/frost/frost_ws/src/frost_ares_navigation/include/**",
+        "/home/frost/frost_ws/src/frost_ares_robot_arm/include/**",
+        "/home/frost/frost_ws/src/frost_eth_bridge/include/**",
+        "/home/frost/frost_ws/src/group_effort_controllers/include/**",
+        "/home/frost/frost_ws/src/ros_msg_parser/include/**",
+        "/home/frost/frost_ws/src/zed-ros-wrapper/zed-ros-interfaces/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

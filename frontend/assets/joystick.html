@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joystick Control</title>
+    <style>
+        /* Add your CSS styles here */
+        #joystick-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            background-color: lightgray;
+            border-radius: 50%;
+            margin: 20px auto;
+        }
+        #joystick {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: darkgray;
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .tabcontent {
+            display: none;
+        }
+        .tablinks.active {
+            background-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="joystick-container">
+        <div id="joystick"></div>
+    </div>
+    <div id="output">X: 0, Y: 0</div>
+    <div>
+        <button id="connectBtn">Connect</button>
+        <div id="status">Status: Disconnected</div>
+    </div>
+    <div>
+        <input type="range" id="speedScale" min="0" max="100" value="50">
+        <span id="speedScaleValue">50%</span>
+    </div>
+    <div>
+        <input type="number" id="maxTranslationalSpeed" value="1.0">
+        <input type="number" id="maxRotationalSpeed" value="1.0">
+    </div>
+    <div>
+        <button id="motorsSwitch" data-status="off">Motors: OFF</button>
+    </div>
+    <div>
+        <select id="modeSelector">
+            <option value="mode1">Mode 1</option>
+            <option value="mode2">Mode 2</option>
+        </select>
+    </div>
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'Tab1')">Tab 1</button>
+        <button class="tablinks" onclick="openTab(event, 'Tab2')">Tab 2</button>
+    </div>
+    <div id="Tab1" class="tabcontent">
+        <h3>Tab 1</h3>
+        <p>Content for Tab 1.</p>
+    </div>
+    <div id="Tab2" class="tabcontent">
+        <h3>Tab 2</h3>
+        <p>Content for Tab 2.</p>
+    </div>
+    <script>
+        // Your JavaScript code here
+        const connectBtn = document.getElementById('connectBtn');
+        const statusDiv = document.getElementById('status');
+        let webSocket;
+
+        const joystick = document.getElementById('joystick');
+        const output = document.getElementById('output');
+        const joystick_container = document.getElementById('joystick-container');
+
+        let active = false;
+        let containerRect = joystick_container.getBoundingClientRect();
+
+        joystick.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', endDrag);
+
+        let joystickX = 0;
+        let joystickY = 0;
+
+        const speedScale = document.getElementById('speedScale');
+        const speedScaleValue = document.getElementById('speedScaleValue');
+
+        speedScale.addEventListener('input', () => {
+            speedScaleValue.textContent = `${speedScale.value}%`;
+        });
+
+        const maxTranslationalSpeed = document.getElementById('maxTranslationalSpeed');
+        const maxRotationalSpeed = document.getElementById('maxRotationalSpeed');
+
+        const motorsSwitch = document.getElementById('motorsSwitch');
+        motorsSwitch.addEventListener('click', () => {
+            if (motorsSwitch.getAttribute('data-status') === 'off') {
+                motorsSwitch.textContent = 'Motors: ON';
+                motorsSwitch.setAttribute('data-status', 'on');
+            } else {
+                motorsSwitch.textContent = 'Motors: OFF';
+                motorsSwitch.setAttribute('data-status', 'off');
+            }
+        });
+
+        let activeTouchId = null;
+
+        function startJoystickTouch(event) {
+            for (let touch of event.touches) {
+                if (isTouchOnJoystick(touch)) {
+                    activeTouchId = touch.identifier;
+                    moveJoystickToTouchPosition(touch);
+                    break;
+                }
+            }
+            event.preventDefault();
+        }
+
+        function moveJoystickTouch(event) {
+            for (let touch of event.touches) {
+                if (touch.identifier === activeTouchId) {
+                    moveJoystickToTouchPosition(touch);
+                    break;
+                }
+            }
+            event.preventDefault();
+        }
+
+        function endJoystickTouch(event) {
+            if (activeTouchId !== null) {
+                for (let touch of event.changedTouches) {
+                    if (touch.identifier === activeTouchId) {
+                        resetJoystickPosition();
+                        activeTouchId = null;
+                        break;
+                    }
+                }
+            }
+            event.preventDefault();
+        }
+
+        function isTouchOnJoystick(touch) {
+            const joystickRect = joystick.getBoundingClientRect();
+            const touchX = touch.clientX;
+            const touchY = touch.clientY;
+            return touchX >= joystickRect.left && touchX <= joystickRect.right &&
+                   touchY >= joystickRect.top && touchY <= joystickRect.bottom;
+        }
+
+        function moveJoystickToTouchPosition(touch) {
+            const containerRect = joystick_container.getBoundingClientRect();
+            let x = touch.clientX - containerRect.left - containerRect.width / 2;
+            let y = touch.clientY - containerRect.top - containerRect.height / 2;
+
+            const radius = containerRect.width / 2;
+            const distance = Math.min(radius, Math.sqrt(x*x + y*y));
+            const angle = Math.atan2(y, x);
+
+            x = distance * Math.cos(angle);
+            y = distance * Math.sin(angle);
+
+            joystick.style.left = `${x + radius}px`;
+            joystick.style.top = `${y + radius}px`;
+
+            joystickX = x / radius;
+            joystickY = -y / radius;
+
+            output.textContent = `X: ${joystickX.toFixed(2)}, Y: ${joystickY.toFixed(2)}`;
+        }
+
+        function resetJoystickPosition() {
+            joystick.style.left = '50%';
+            joystick.style.top = '50%';
+            output.textContent = 'X: 0, Y: 0';
+            joystickX = 0.0;
+            joystickY = 0.0;
+        }
+
+        joystick_container.addEventListener('touchstart', startJoystickTouch);
+        joystick_container.addEventListener('touchmove', moveJoystickTouch);
+        joystick_container.addEventListener('touchend', endJoystickTouch);
+        joystick_container.addEventListener('touchcancel', endJoystickTouch);
+
+        function startDrag(event) {
+            active = true;
+            containerRect = joystick_container.getBoundingClientRect();
+        }
+
+        function drag(event) {
+            if (!active) return;
+            event.preventDefault();
+
+            let x = (event.touches ? event.touches[0].clientX : event.clientX) - containerRect.left - containerRect.width / 2;
+            let y = (event.touches ? event.touches[0].clientY : event.clientY) - containerRect.top - containerRect.height / 2;
+
+            const radius = containerRect.width / 2;
+            const distance = Math.min(radius, Math.sqrt(x*x + y*y));
+            const angle = Math.atan2(y, x);
+
+            x = distance * Math.cos(angle);
+            y = distance * Math.sin(angle);
+
+            joystick.style.left = `${x + radius}px`;
+            joystick.style.top = `${y + radius}px`;
+
+            joystickX = x / radius;
+            joystickY = -y / radius;
+
+            output.textContent = `X: ${joystickX.toFixed(2)}, Y: ${joystickY.toFixed(2)}`;
+        }
+
+        function endDrag() {
+            active = false;
+            joystick.style.left = '50%';
+            joystick.style.top = '50%';
+            output.textContent = 'X: 0, Y: 0';
+            joystickX = 0.0;
+            joystickY = 0.0;
+        }
+
+        function updateSliderFromTouch(touch) {
+            const touchX = touch.clientX;
+            const sliderRect = speedScale.getBoundingClientRect();
+            const newSliderValue = ((touchX - sliderRect.left) / sliderRect.width) * 100;
+
+            speedScale.value = Math.min(100, Math.max(0, newSliderValue));
+            speedScaleValue.textContent = `${Number(speedScale.value).toFixed(0)}%`;
+        }
+
+        speedScale.addEventListener('touchstart', (event) => {
+            for (let touch of event.touches) {
+                updateSliderFromTouch(touch);
+            }
+            event.preventDefault();
+        });
+
+        speedScale.addEventListener('touchmove', (event) => {
+            for (let touch of event.touches) {
+                updateSliderFromTouch(touch);
+            }
+            event.preventDefault();
+        });
+
+        function toggleMotorsTouch(event) {
+            for (let touch of event.touches) {
+                if (isTouchOnButton(touch, motorsSwitch)) {
+                    toggleMotors();
+                    break;
+                }
+            }
+            event.preventDefault();
+        }
+
+        function isTouchOnButton(touch, button) {
+            const buttonRect = button.getBoundingClientRect();
+            const touchX = touch.clientX;
+            const touchY = touch.clientY;
+            return touchX >= buttonRect.left && touchX <= buttonRect.right &&
+                   touchY >= buttonRect.top && touchY <= buttonRect.bottom;
+        }
+
+        function toggleMotors() {
+            const isOn = motorsSwitch.getAttribute('data-status') === 'on';
+            if (isOn) {
+                motorsSwitch.setAttribute('data-status', 'off');
+                motorsSwitch.textContent = 'Motors: OFF';
+            } else {
+                motorsSwitch.setAttribute('data-status', 'on');
+                motorsSwitch.textContent = 'Motors: ON';
+            }
+        }
+
+        connectBtn.addEventListener('click', () => {
+            if (!webSocket || webSocket.readyState === WebSocket.CLOSED) {
+                webSocket = new WebSocket('ws://192.168.2.24:8765');
+
+                webSocket.onopen = () => {
+                    console.log('WebSocket connection opened');
+                    statusDiv.textContent = 'Status: Connected';
+                };
+
+                webSocket.onmessage = (event) => {
+                    console.log('Message from server:', event.data);
+                };
+
+                webSocket.onclose = (event) => {
+                    console.log('WebSocket connection closed:', event);
+                    statusDiv.textContent = 'Status: Disconnected';
+                };
+
+                webSocket.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+            } else {
+                console.log('WebSocket is already connected');
+            }
+        });
+
+        motorsSwitch.addEventListener('touchstart', toggleMotorsTouch);
+
+        window.addEventListener("gamepadconnected", (e) => {
+            console.log("Gamepad connected:", e.gamepad);
+            requestAnimationFrame(updateGamepadStatus);
+        });
+
+        function updateGamepadStatus() {
+            const gamepads = navigator.getGamepads();
+            if (gamepads[0]) {
+                const gamepad = gamepads[0];
+
+                const speedScaleValue = (gamepad.axes[0] + 1) * 50;
+                speedScale.value = speedScaleValue;
+                speedScaleValueSpan.textContent = `${speedScaleValue.toFixed(0)}%`;
+
+                if (gamepad.buttons[0].pressed) {
+                    maxTranslationalSpeed.value = parseFloat(maxTranslationalSpeed.value) + 0.1;
+                }
+                if (gamepad.buttons[1].pressed) {
+                    maxTranslationalSpeed.value = parseFloat(maxTranslationalSpeed.value) - 0.1;
+                }
+
+                requestAnimationFrame(updateGamepadStatus);
+            }
+        }
+
+        function sendData() {
+            if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+                const scale = speedScale.value / 100;
+                const maxTransSpeed = parseFloat(maxTranslationalSpeed.value) || 0;
+                const maxRotSpeed = parseFloat(maxRotationalSpeed.value) || 0;
+
+                const translationalSpeed = maxTransSpeed * scale * joystickY;
+                const rotationalSpeed = (maxRotSpeed * scale * -joystickX) / 180.0 * Math.PI;
+
+                const mode = document.getElementById('modeSelector').value;
+
+                const data = {
+                    translationalSpeed: translationalSpeed.toFixed(2),
+                    rotationalSpeed: rotationalSpeed.toFixed(2),
+                    motorsOn: motorsSwitch.getAttribute('data-status') === 'on',
+                    mode: mode
+                };
+
+                webSocket.send(JSON.stringify(data));
+                console.log('Data sent:', data);
+            } else {
+                console.error('WebSocket is not open');
+            }
+        }
+
+        function openTab(evt, componentName) {
+            var i, tabcontent, tablinks;
+            
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+              tabcontent[i].style.display = "none";
+            }
+            
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+              tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            
+            document.getElementById(componentName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelector('.tablinks').click();
+        });
+
+        const interval = 100;
+        setInterval(sendData, interval);
+
+        window.addEventListener('deviceorientation', handleOrientation);
+
+        function handleOrientation(event) {
+            const alpha = event.alpha;
+            const beta = event.beta;
+            const gamma = event.gamma;
+
+            const radius = joystick_container.getBoundingClientRect().width / 2;
+            const x = (gamma / 90) * radius;
+            const y = (beta / 90) * radius;
+
+            const distance = Math.min(radius, Math.sqrt(x * x + y * y));
+            const angle = Math.atan2(y, x);
+
+            const limitedX = distance * Math.cos(angle);
+            const limitedY = distance * Math.sin(angle);
+
+            joystick.style.left = `${limitedX + radius}px`;
+            joystick.style.top = `${limitedY + radius}px`;
+
+            joystickX = limitedX / radius;
+            joystickY = -limitedY / radius;
+
+            output.textContent = `X: ${joystickX.toFixed(2)}, Y: ${joystickY.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
